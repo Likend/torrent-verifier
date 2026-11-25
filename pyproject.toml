@@ -1,0 +1,16 @@
+[project]
+name = "temp"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "bencode-py>=4.1.0",
+    "sortedcontainers>=2.4.0",
+    "tqdm>=4.70.1",
+]
+
+[dependency-groups]
+dev = [
+    "sortedcontainers-stubs>=2.4.3",
+]
