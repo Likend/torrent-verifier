@@ -1,26 +1,49 @@
-# Torrent verifier
+# Torrent Verifier
 
-根据 `bencodepy.decode` 输出校验 torrent 文件。校验器依赖 `FileSystem` 接口，文件系统的 `open()` 返回标准库二进制文件对象，因此可在测试中注入返回 `io.BytesIO` 的实现，不需要生产代码里的 mock 文件系统。
+使用 `.torrent` 文件中的 piece hash 校验本地内容是否完整、正确。
 
-## 设计
+校验器会按照 torrent 中记录的文件顺序读取内容，并对每个 piece 计算 SHA-1。支持单文件 torrent、多文件 torrent，以及通过挂载将 torrent 内部路径映射到不同的本地目录。
 
-- `load_torrent`：调用 `bencodepy.decode`，然后交给 `TorrentMetadata.from_bencode`。
-- `TorrentMetadata.from_bencode`：将 bencode 解码结果转换为领域模型，并保留 torrent 文件顺序。
-- `TorrentMetadata`：计算每个文件在 torrent 拼接数据中的 `[start, end)` 位置。
-- `TorrentVerifier`：严格按 torrent 文件顺序拼接读取数据，按 piece 校验 SHA-1；piece 跨文件时会分别读取文件的对应区间。
+## 环境要求
 
-## 使用
+- Python 3.12 或更高版本
 
-直接传入 `.torrent` 文件：
+使用 [uv](https://docs.astral.sh/uv/)，可以直接运行：
 
-```text
-python verify_torrent.py file.torrent D:\\Downloads\\content
+```bash
+uv run python main.py <torrent-file> <content-path>
 ```
 
-输出中的位置是 torrent 拼接数据的字节区间，采用半开区间 `[start, end)`。
-
-## 测试
+## 基本用法
 
 ```text
-python -m pytest
+python main.py <torrent-file> <content-path>
+```
+
+参数说明：
+
+- `<torrent-file>`：输入的 `.torrent` 文件路径。
+- `<content-path>`：包含待校验内容的本地根目录。
+  - 对于单文件 torrent，传入该文件所在的目录。
+  - 对于多文件 torrent，传入包含 torrent 根目录的目录路径。
+
+## 挂载路径
+
+默认情况下，torrent 中的所有路径都相对于 `<content-path>` 查找。使用 `--mount`（或 `-m`）可以把 torrent 内部的某个路径映射到另一个本地目录：
+
+```text
+python main.py <torrent-file> <content-path> \
+    --mount <torrent-path-1> <mount-to-path-1>
+    [--mount <torrent-path-2> <mount-to-path-2> ...]
+```
+
+其中：
+
+- `<torrent-path-*>`：torrent 内部路径，使用 `/` 分隔，例如 `Music/Album`。
+- `<mount-to-path-*>`：本地挂载目录。
+
+## 查看帮助
+
+```bash
+python main.py --help
 ```
