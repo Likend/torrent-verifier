@@ -69,6 +69,10 @@ class TorrentMetadata:
     def total_length(self) -> int:
         return sum(file.length for file in self.files)
 
+    @property
+    def block_number(self) -> int:
+        return len(self.piece_hashes)
+
     @dataclass
     class IndexCache:
         index: list[

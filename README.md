@@ -10,13 +10,13 @@
 
 使用 [uv](https://docs.astral.sh/uv/)，可以直接运行：
 
-```bash
+```sh
 uv run python main.py <torrent-file> <content-path>
 ```
 
 ## 基本用法
 
-```text
+```sh
 python main.py <torrent-file> <content-path>
 ```
 
@@ -31,7 +31,7 @@ python main.py <torrent-file> <content-path>
 
 默认情况下，torrent 中的所有路径都相对于 `<content-path>` 查找。使用 `--mount`（或 `-m`）可以把 torrent 内部的某个路径映射到另一个本地目录：
 
-```text
+```sh
 python main.py <torrent-file> <content-path> \
     --mount <torrent-path-1> <mount-to-path-1>
     [--mount <torrent-path-2> <mount-to-path-2> ...]
@@ -41,6 +41,17 @@ python main.py <torrent-file> <content-path> \
 
 - `<torrent-path-*>`：torrent 内部路径，使用 `/` 分隔，例如 `Music/Album`。
 - `<mount-to-path-*>`：本地挂载目录。
+
+## 校验缓存
+
+将校验成功的块记录到缓存中，以方便下次校验时跳过。
+
+```sh
+python main  <torrent-file> <content-path> \
+    --incre-cache <path-to-cache-file>
+```
+
+缓存文件不存在时将自动创建。
 
 ## 查看帮助
 
