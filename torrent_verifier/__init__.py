@@ -12,7 +12,7 @@ from .verifier import FileVerification, TorrentVerifier, VerificationReport
 
 def load_torrent(path: str | PathLike[str]) -> TorrentMetadata:
     with Path(path).open("rb") as stream:
-        return TorrentMetadata.from_bencode(bencodepy.decode(stream.read()))
+        return TorrentMetadata.from_bencode(bencodepy.decode(stream.read()))  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
 
 
 __all__ = [

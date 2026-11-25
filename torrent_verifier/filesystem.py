@@ -4,7 +4,7 @@ import os
 from collections.abc import Generator, Sequence
 from contextlib import AbstractContextManager, contextmanager
 from pathlib import Path
-from typing import BinaryIO, Protocol
+from typing import BinaryIO, Protocol, override
 
 from sortedcontainers import SortedDict
 
@@ -40,6 +40,7 @@ class LocalFileSystem:
             raise ValueError("Can not unmount root path")
         del self._mount_map[tuple(path)]
 
+    @override
     def __repr__(self) -> str:
         kv = (
             f'"{"/".join(key) if len(key) else "."}":"{value}"'

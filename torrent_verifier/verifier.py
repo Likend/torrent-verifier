@@ -4,7 +4,7 @@ import hashlib
 from collections.abc import Callable
 from contextlib import ExitStack
 from dataclasses import dataclass, field
-from typing import BinaryIO
+from typing import BinaryIO, override
 
 from .filesystem import FileSystem
 from .model import TorrentFile, TorrentMetadata
@@ -22,14 +22,16 @@ class ErrorDetail(Detail):
 class ProgressDetail(Detail):
     cur: int
 
+    @override
     def __str__(self) -> str:
-        return f"Porgress {self.cur}"
+        return f"Progress {self.cur}"
 
 
 @dataclass(frozen=True)
 class BlockErrorDetail(ErrorDetail):
     index: int
 
+    @override
     def __str__(self) -> str:
         return f"Block #{self.index} damaged"
 
@@ -43,6 +45,7 @@ class FileErrorDetail(ErrorDetail):
 class FileLengthErrorDetail(FileErrorDetail):
     actual_length: int
 
+    @override
     def __str__(self) -> str:
         return f"Actual length of file {self.file.display_path} is {self.actual_length}, expected {self.file.length}"
 
@@ -51,8 +54,9 @@ class FileLengthErrorDetail(FileErrorDetail):
 class FileOSErrorDetail(FileErrorDetail):
     exc: OSError
 
+    @override
     def __str__(self) -> str:
-        return f"OSError occured when verifing {self.file.display_path}: {self.exc}"
+        return f"OSError occurred when verifying {self.file.display_path}: {self.exc}"
 
 
 @dataclass
@@ -101,6 +105,7 @@ class VerificationReport:
     def verified(self) -> bool:
         return self.pieces_failed == 0 and all(file.verified for file in self._files)
 
+    @override
     def __repr__(self) -> str:
         return f"VerificationReport(verified={self.verified}, pieces_verified={self.pieces_verified}, pieces_failed={self.pieces_failed}, files={self._files})"
 
@@ -147,7 +152,7 @@ class TorrentVerifier:
                     hashlib.sha1(self._read_range(file_ios, start, size)).digest()
                     == expected
                 )
-                report._add_block_verification(index, start, start + size, verified)
+                report._add_block_verification(index, start, start + size, verified)  # pyright: ignore[reportPrivateUsage]
                 log_handler(ProgressDetail(cur=index))
         return report
 

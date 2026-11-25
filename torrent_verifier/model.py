@@ -13,10 +13,10 @@ class TorrentFile:
     index: int
 
     @classmethod
-    def from_bencode(cls, value: Any, index: int) -> TorrentFile:
+    def from_bencode(cls, value: Any, index: int) -> TorrentFile:  # pyright: ignore[reportExplicitAny, reportAny]
         file = _mapping(value)
         path_key = b"path" if b"path" in file else b"path.utf-8"
-        path = file[path_key]
+        path = file[path_key]  # pyright: ignore[reportAny]
         if isinstance(path, bytes):
             parts = [_text(path)]
         elif isinstance(path, Sequence):
@@ -40,7 +40,7 @@ class TorrentMetadata:
     files: list[TorrentFile]
 
     @classmethod
-    def from_bencode(cls, decoded: Mapping[bytes, Any]) -> TorrentMetadata:
+    def from_bencode(cls, decoded: Mapping[bytes, Any]) -> TorrentMetadata:  # pyright: ignore[reportExplicitAny]
         """Build domain metadata from ``bencodepy.decode`` output."""
         info = _mapping(decoded[b"info"])
         name = _text(info[b"name"])
@@ -52,7 +52,7 @@ class TorrentMetadata:
         if b"files" in info:
             files = [
                 TorrentFile.from_bencode(item, i)
-                for i, item in enumerate(_sequence(info[b"files"]))
+                for i, item in enumerate(_sequence(info[b"files"]))  # pyright: ignore[reportAny]
             ]
         else:
             length = _non_negative_int(info[b"length"])
@@ -99,7 +99,7 @@ class TorrentMetadata:
                 position = end
 
             cache = self.IndexCache(index)
-            self._cached_index = cache
+            self._cached_index = cache  # pyright: ignore[reportUninitializedInstanceVariable]
         return cache
 
     def iter_file_ranges(self) -> Iterator[tuple[TorrentFile, int, int]]:
@@ -125,31 +125,31 @@ class TorrentMetadata:
                 yield self.files[i], cache.index[i], cache.index[i + 1]
 
 
-def _mapping(value: Any) -> Mapping[bytes, Any]:
+def _mapping(value: Any) -> Mapping[bytes, Any]:  # pyright: ignore[reportAny, reportExplicitAny]
     if not isinstance(value, Mapping):
         raise TypeError("expected a mapping")
-    return value
+    return value  # pyright: ignore[reportUnknownVariableType]
 
 
-def _sequence(value: Any) -> Sequence[Any]:
+def _sequence(value: Any) -> Sequence[Any]:  # pyright: ignore[reportAny, reportExplicitAny]
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
         raise TypeError("expected a sequence")
     return value
 
 
-def _text(value: Any) -> str:
+def _text(value: Any) -> str:  # pyright: ignore[reportAny, reportExplicitAny]
     if isinstance(value, bytes):
         return value.decode("utf-8")
     raise TypeError("expected bytes containing UTF-8 text")
 
 
-def _bytes(value: Any) -> bytes:
+def _bytes(value: Any) -> bytes:  # pyright: ignore[reportAny, reportExplicitAny]
     if isinstance(value, bytes):
         return value
     raise TypeError("expected bytes")
 
 
-def _non_negative_int(value: Any) -> int:
+def _non_negative_int(value: Any) -> int:  # pyright: ignore[reportAny, reportExplicitAny]
     if isinstance(value, bool) or not isinstance(value, int) or value < 0:
         raise ValueError("expected a non-negative integer")
     return value

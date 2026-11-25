@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import cast
 
 from tqdm import tqdm
 
@@ -20,7 +21,7 @@ def invoke(metadata: TorrentMetadata, fs: LocalFileSystem):
 
     def log_handler(detail: Detail):
         if isinstance(detail, ProgressDetail):
-            pbar.update(detail.cur - pbar.n)
+            pbar.update(detail.cur - pbar.n)  # pyright: ignore[reportAny]
         elif isinstance(detail, ErrorDetail):
             pbar.write(str(detail))
 
@@ -67,16 +68,19 @@ def main():
         ),
     )
     args = parser.parse_args()
+    input_path = cast(Path, args.input)
+    content_path = cast(Path, args.content)
+    mounts = cast(list[list[str]], args.mount)
 
-    metadata = load_torrent(args.input)
-    fs = LocalFileSystem(args.content)
-    for torrent_path, mount_to in args.mount:
+    metadata = load_torrent(input_path)
+    fs = LocalFileSystem(content_path)
+    for torrent_path, mount_to in mounts:
         path = torrent_path.split("/")
         if not torrent_path or any(not component for component in path):
             parser.error(
                 "--mount torrent path must contain non-empty components separated by '/'"
             )
-        fs.mount(path, Path(mount_to))
+        fs.mount(path, mount_to)
 
     invoke(metadata, fs)
     return 0
